@@ -1,0 +1,37 @@
+# SubSentinel Privacy Configuration (TOON Format)
+# GDPR/CCPA compliance settings
+
+privacy_config{pii_redaction,cascade_delete_sla_hours,data_retention_days,encryption,audit_logging}:
+true,72,365,AES-256-KMS,true
+
+pii_fields[8]{field,action,replacement}:
+email,redact,***@***.***
+phone,redact,***-***-****
+ssn,remove,-
+credit_card,hash,SHA256
+name,pseudonymize,User_{hash}
+address,remove,-
+ip_address,anonymize,0.0.0.0
+date_of_birth,generalize,YYYY
+
+consent_types[4]{type,required,default,description}:
+data_collection,true,false,Allow SubSentinel to process your subscription data
+email_scanning,true,false,Allow scanning Gmail for receipt detection
+calendar_access,true,false,Allow reading Google Calendar for life events
+analytics,false,true,Allow anonymous usage analytics
+
+deletion_cascade[5]{resource,action,sla_hours}:
+dynamodb_records,delete_all_user_items,24
+s3_receipts,delete_user_prefix,24
+s3_screenshots,delete_user_prefix,24
+opensearch_vectors,delete_by_user_id,48
+cloudwatch_logs,anonymize_user_id,72
+
+encryption_config{kms_key_alias,s3_encryption,dynamodb_encryption,transit_encryption}:
+alias/subsentinel-master,AES256,AWS_OWNED_CMK,TLS1.3
+
+gdpr_rights[4]{right,endpoint,sla_hours}:
+access,/api/v1/privacy/export,48
+rectification,/api/v1/privacy/update,24
+erasure,/api/v1/privacy/delete,72
+portability,/api/v1/privacy/download,48

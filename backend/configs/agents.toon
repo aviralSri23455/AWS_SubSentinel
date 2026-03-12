@@ -1,0 +1,33 @@
+# SubSentinel Agent Configuration (TOON Format)
+# Used by all Lambda agents for runtime configuration
+
+agents[5]{name,memory_mb,timeout_sec,handler,description}:
+auditor,128,30,bootstrap,Receipt scanning via SES and Textract
+calendar,128,30,bootstrap,Life event detection from Google Calendar
+negotiator,256,60,bootstrap,Email draft generation with community learning
+defender,512,120,bootstrap,Dark pattern detection with Rekognition + Vision
+learner,256,45,bootstrap,Adaptive ML with OpenSearch k-NN vectors
+
+bedrock_config{model_id,embedding_model,max_tokens,temperature}:
+anthropic.claude-3-5-sonnet-20241022-v2:0,amazon.titan-embed-text-v2:0,1500,0.3
+
+toon_config{enabled,log_savings,compress_dynamo,compress_opensearch}:
+true,true,true,true
+
+dynamodb_tables[5]{name,pk,sk,gsi}:
+subsentinel-subscriptions,PK,SK,provider-index
+subsentinel-insights,PK,SK,-
+subsentinel-negotiations,PK,SK,provider-index
+subsentinel-dark-patterns,PK,SK,provider-index
+subsentinel-outcomes,PK,SK,provider-index
+
+s3_buckets[3]{name,lifecycle_days,encryption}:
+subsentinel-receipts,90,AES256
+subsentinel-screenshots,180,AES256
+subsentinel-ses-receipts,30,AES256
+
+eventbridge_rules[4]{name,schedule,target,description}:
+daily-calendar-scan,rate(1 day),calendar-agent,Scan calendars daily
+weekly-audit,rate(7 days),auditor-agent,Weekly subscription audit
+monthly-report,rate(30 days),report-generator,Monthly savings report
+hourly-learning,rate(1 hour),learner-agent,Process new outcomes

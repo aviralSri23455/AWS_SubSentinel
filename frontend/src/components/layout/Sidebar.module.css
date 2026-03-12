@@ -1,0 +1,469 @@
+/* ============================================
+   SIDEBAR  — Next-Level Redesign
+   Deep glass, neon accents, premium feel
+   ============================================ */
+
+/* ─── Shell ──────────────────────────────────── */
+.sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 268px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    z-index: 100;
+    overflow: hidden;
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    transition: width 0.3s ease;
+}
+
+/* Aurora glow strip on right edge */
+.sidebar::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 10%; bottom: 10%;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(124,58,237,0.6) 30%,
+        rgba(6,182,212,0.4) 60%,
+        transparent 100%
+    );
+    opacity: 0.5;
+}
+
+/* ─── Scrollable inner ────────────────────────── */
+.sidebarInner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.25rem 1rem 1rem;
+    scrollbar-width: none;
+}
+.sidebarInner::-webkit-scrollbar { display: none; }
+
+/* ─── Logo ───────────────────────────────────── */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.logoIconWrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.logoIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 0 20px rgba(124,58,237,0.5), 0 4px 12px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+}
+
+.logoIconRing {
+    position: absolute;
+    inset: -3px;
+    border-radius: 15px;
+    border: 1px solid rgba(124,58,237,0.3);
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+.logoTextGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.logoTitle {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e0e7ff 0%, var(--color-primary-light) 40%, var(--color-secondary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.logoSubtitle {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* ─── Connection Badge ────────────────────────── */
+.connectionBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.12);
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.connectionBadge:hover {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.25);
+}
+
+.connDotLive {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: livePulse 2.5s infinite;
+    flex-shrink: 0;
+}
+
+.connDotOff {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(100,116,139,0.4);
+    flex-shrink: 0;
+}
+
+.connText {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+/* ─── Navigation Label ────────────────────────── */
+.navLabel {
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    padding-left: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.navLabel::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(124,58,237,0.2), transparent);
+}
+
+/* ─── Navigation ──────────────────────────────── */
+.nav { margin-bottom: 0.5rem; }
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.navItem::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
+    border-radius: 0 2px 2px 0;
+    transform: scaleY(0);
+    transition: transform 0.25s ease;
+    transform-origin: center;
+}
+
+.navItem:hover {
+    background: var(--bg-glass-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.navItem:hover::before { transform: scaleY(1); }
+
+.navItem.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(6,182,212,0.05) 100%);
+    color: var(--color-primary-light);
+    border-color: rgba(124,58,237,0.18);
+    box-shadow: inset 0 0 20px rgba(124,58,237,0.05);
+}
+
+.navItem.active::before { transform: scaleY(1); }
+
+.navIconWrap {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    background: rgba(255,255,255,0.04);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.navItem.active .navIconWrap {
+    background: rgba(124,58,237,0.15);
+    box-shadow: 0 0 12px rgba(124,58,237,0.3);
+}
+
+.navItem:hover .navIconWrap {
+    background: rgba(255,255,255,0.07);
+}
+
+.navContent { flex: 1; min-width: 0; }
+
+.navTextRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.navText {
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: block;
+    letter-spacing: -0.01em;
+}
+
+.navCount {
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: white;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    padding: 0.06rem 0.45rem;
+    border-radius: var(--radius-full);
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.5;
+    flex-shrink: 0;
+    animation: fadeIn 0.3s ease-out;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+}
+
+.navDesc {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 0.1rem;
+}
+
+/* ─── Agent Section ───────────────────────────── */
+.agentSection {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.agentHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.agentCountBadge {
+    font-size: 0.56rem;
+    font-weight: 800;
+    color: #10b981;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ─── Agent Rows ──────────────────────────────── */
+.agentRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.72rem;
+    transition: all 0.25s ease;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    min-width: 0;
+    cursor: default;
+}
+
+.agentRow:hover { background: var(--bg-glass-hover); }
+
+.agentRowActive {
+    background: rgba(16,185,129,0.04);
+    border-color: rgba(16,185,129,0.1);
+}
+
+/* ─── Dot + Ring ──────────────────────────────── */
+.agentDotWrap {
+    position: relative;
+    width: 16px; height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agentDot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    z-index: 1;
+    position: relative;
+}
+
+.agentDotActive {
+    box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16,185,129,0.35);
+    animation: agentGlow 2.5s ease-in-out infinite;
+}
+
+.agentDotProcessing {
+    box-shadow: 0 0 8px #f59e0b;
+    animation: agentProcess 1.2s ease-in-out infinite;
+}
+
+.agentDotRing {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    transform: translate(-50%, -50%);
+    animation: agentRingPulse 2.2s ease-out infinite;
+    opacity: 0.6;
+}
+
+@keyframes agentGlow {
+    0%, 100% { box-shadow: 0 0 5px #10b981, 0 0 10px rgba(16,185,129,0.25); }
+    50%       { box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16,185,129,0.5); }
+}
+@keyframes agentProcess {
+    0%, 100% { opacity: 1;   box-shadow: 0 0 5px #f59e0b; }
+    50%       { opacity: 0.5; box-shadow: 0 0 10px #f59e0b; }
+}
+@keyframes agentRingPulse {
+    0%   { width: 8px;  height: 8px;  opacity: 0.7; }
+    100% { width: 22px; height: 22px; opacity: 0; }
+}
+
+.agentInfo { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+
+.agentName {
+    color: var(--text-secondary);
+    font-size: 0.73rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agentLastActive {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.agentService {
+    font-size: 0.52rem;
+    color: #ff9900;
+    font-family: var(--font-mono);
+    opacity: 0.75;
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    max-width: 56px;
+}
+
+.agentStatusLabel {
+    font-size: 0.54rem;
+    font-weight: 700;
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.statusActive    { text-shadow: 0 0 8px rgba(16,185,129,0.5); }
+.statusProcessing { animation: pulse 1.8s infinite; }
+
+/* ─── Bottom ──────────────────────────────────── */
+.bottom {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.bottomItem { padding: 0.5rem 0.75rem; }
+
+.versionBadge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.versionEnv {
+    padding: 0.12rem 0.4rem;
+    background: rgba(245,158,11,0.1);
+    color: var(--color-warning);
+    border-radius: var(--radius-sm);
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,158,11,0.2);
+}
+
+/* ─── Responsive ──────────────────────────────── */
+@media (max-width: 768px) {
+    .sidebar { width: 68px; }
+    .logoTitle, .logoSubtitle, .logoTextGroup,
+    .navText, .navDesc, .navCount, .navContent,
+    .connectionBadge, .agentSection, .bottom { display: none; }
+
+    .navIconWrap { width: 36px; height: 36px; font-size: 1.1rem; }
+    .navItem { justify-content: center; padding: 0.75rem 0.5rem; }
+    .sidebarInner { padding: 1rem 0.5rem; }
+}

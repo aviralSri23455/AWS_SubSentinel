@@ -1,0 +1,103 @@
+# Receipt Auditor Agent Specification
+
+title: "Receipt Auditor Agent"
+description: |
+  Scans Gmail inbox for subscription receipt emails, extracts subscription data using Amazon Textract,
+  and stores structured data in DynamoDB. Uses TOON protocol for efficient Bedrock processing.
+
+version: "1.0.0"
+author: "SubSentinel Team"
+date: "2026-03-09"
+
+## Triggers
+triggers:
+  - "Scheduled execution every 6 hours via EventBridge"
+  - "Manual trigger from dashboard UI"
+  - "Webhook from Gmail API for new receipts"
+  - "User request for immediate scan"
+
+## Preconditions
+preconditions:
+  - "Google OAuth tokens available and valid"
+  - "AWS Bedrock access configured with Claude Sonnet model"
+  - "DynamoDB tables exist with proper schema"
+  - "Amazon Textract service available in region"
+  - "Gmail API enabled and accessible"
+  - "Sufficient Lambda execution time (5 minutes)"
+  - "Required IAM permissions for AWS services"
+
+## Postconditions
+postconditions:
+  - "New subscription receipts processed and stored in DynamoDB"
+  - "Processed receipts marked as read in Gmail"
+  - "CloudWatch metrics updated with processing statistics"
+  - "User notified via dashboard of new subscriptions found"
+  - "TOON-encoded data ready for other agents"
+  - "Error logs written to CloudWatch Logs for failures"
+
+## Exceptions
+exceptions:
+  - "Gmail API unavailable → Retry with exponential backoff (max 3 attempts)"
+  - "No new receipts found → Log info and exit cleanly"
+  - "Bedrock quota exceeded → Queue message in SQS for later processing"
+  - "Textract processing failed → Fall back to regex extraction"
+  - "Invalid receipt format → Mark as unprocessable and continue"
+  - "DynamoDB write failure → Retry with backoff, then dead-letter queue"
+  - "OAuth token expired → Trigger token refresh workflow"
+
+## Acceptance Criteria
+acceptance_criteria:
+  functional:
+    - "Extracts subscription data from 95% of receipt emails"
+    - "Processes minimum 100 receipts in under 5 minutes"
+    - "Correctly identifies subscription provider from receipt"
+    - "Accurately extracts amount, date, and renewal information"
+    - "Handles multiple receipt formats (PDF, HTML, plain text)"
+    
+  performance:
+    - "Cold start time < 100ms"
+    - "Memory usage < 128MB"
+    - "Bedrock token usage reduced by 60% using TOON"
+    - "Concurrent processing of up to 10 receipts"
+    
+  reliability:
+    - "99.9% uptime for scheduled executions"
+    - "Automatic retry for transient failures"
+    - "Dead-letter queue for unprocessable items"
+    - "Comprehensive error logging and monitoring"
+    
+  security:
+    - "OAuth tokens encrypted at rest"
+    - "No PII stored in logs"
+    - "Least privilege IAM permissions"
+    - "API keys rotated every 90 days"
+
+## Data Flow
+data_flow:
+  1. "Query Gmail for unread receipts from last 6 hours"
+  2. "Download email attachments (PDFs, images)"
+  3. "Extract text using Amazon Textract"
+  4. "Parse extracted text with Bedrock + TOON"
+  5. "Structure data into subscription model"
+  6. "Store in DynamoDB with TTL"
+  7. "Update processing metrics"
+  8. "Mark emails as processed"
+
+## Integration Points
+integrations:
+  - "Gmail API: Email retrieval"
+  - "Amazon Textract: OCR processing"
+  - "AWS Bedrock: AI parsing with TOON"
+  - "DynamoDB: Data storage"
+  - "CloudWatch: Metrics and logging"
+  - "EventBridge: Scheduling"
+  - "SQS: Error queue"
+
+## Test Scenarios
+test_scenarios:
+  - "Happy path: Process valid PDF receipt"
+  - "Edge case: Receipt with multiple subscriptions"
+  - "Error case: Corrupted PDF file"
+  - "Performance: 100 concurrent receipts"
+  - "Security: Invalid OAuth token"
+  - "Integration: Bedrock service unavailable"

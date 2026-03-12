@@ -1,0 +1,200 @@
+{
+    "Comment": "SubSentinel Agent Orchestration — AWS Step Functions State Machine",
+    "StartAt": "AuditReceipts",
+    "States": {
+        "AuditReceipts": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:subsentinel-auditor",
+            "Comment": "Step 1: Scan Gmail for subscription receipts via Textract + TOON",
+            "TimeoutSeconds": 30,
+            "ResultPath": "$.auditResult",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed",
+                        "States.Timeout"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "HandleAuditError",
+                    "ResultPath": "$.error"
+                }
+            ],
+            "Next": "AnalyzeCalendar"
+        },
+        "HandleAuditError": {
+            "Type": "Pass",
+            "Comment": "Log audit failure and continue with calendar analysis",
+            "Result": {
+                "auditResult": {
+                    "subscriptions": [],
+                    "failed": true
+                }
+            },
+            "ResultPath": "$.auditResult",
+            "Next": "AnalyzeCalendar"
+        },
+        "AnalyzeCalendar": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:subsentinel-calendar",
+            "Comment": "Step 2: Detect life events from Google Calendar via TOON + Bedrock",
+            "TimeoutSeconds": 30,
+            "ResultPath": "$.calendarResult",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Next": "HasSubscriptionsToNegotiate"
+        },
+        "HasSubscriptionsToNegotiate": {
+            "Type": "Choice",
+            "Comment": "Check if there are subscriptions that could benefit from negotiation",
+            "Choices": [
+                {
+                    "Variable": "$.auditResult.totalReceipts",
+                    "NumericGreaterThan": 0,
+                    "Next": "ParallelNegotiateAndDefend"
+                }
+            ],
+            "Default": "GenerateReport"
+        },
+        "ParallelNegotiateAndDefend": {
+            "Type": "Parallel",
+            "Comment": "Step 3: Run Negotiator and Defender in parallel for maximum efficiency",
+            "Branches": [
+                {
+                    "StartAt": "NegotiateBestDeal",
+                    "States": {
+                        "NegotiateBestDeal": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:subsentinel-negotiator",
+                            "Comment": "Draft cancellation/negotiation emails via OpenSearch k-NN + Bedrock",
+                            "TimeoutSeconds": 60,
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "States.TaskFailed"
+                                    ],
+                                    "IntervalSeconds": 3,
+                                    "MaxAttempts": 2,
+                                    "BackoffRate": 2.0
+                                }
+                            ],
+                            "End": true
+                        }
+                    }
+                },
+                {
+                    "StartAt": "DetectDarkPatterns",
+                    "States": {
+                        "DetectDarkPatterns": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:subsentinel-defender",
+                            "Comment": "Analyze cancellation UIs for dark patterns via Rekognition + Bedrock Vision",
+                            "TimeoutSeconds": 60,
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "States.TaskFailed"
+                                    ],
+                                    "IntervalSeconds": 3,
+                                    "MaxAttempts": 2,
+                                    "BackoffRate": 2.0
+                                }
+                            ],
+                            "End": true
+                        }
+                    }
+                }
+            ],
+            "ResultPath": "$.parallelResults",
+            "Next": "LearnFromOutcome"
+        },
+        "LearnFromOutcome": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:${AWS::AccountId}:function:subsentinel-learner",
+            "Comment": "Step 4: Update ML model with outcomes via Comprehend + Titan + OpenSearch",
+            "TimeoutSeconds": 30,
+            "ResultPath": "$.learningResult",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "GenerateReport",
+                    "ResultPath": "$.learningError"
+                }
+            ],
+            "Next": "GenerateReport"
+        },
+        "GenerateReport": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:putItem",
+            "Comment": "Step 5: Store final aggregated report in DynamoDB",
+            "Parameters": {
+                "TableName": "subsentinel-reports",
+                "Item": {
+                    "PK": {
+                        "S.$": "$.executionId"
+                    },
+                    "SK": {
+                        "S": "REPORT"
+                    },
+                    "auditResult": {
+                        "S.$": "States.JsonToString($.auditResult)"
+                    },
+                    "calendarResult": {
+                        "S.$": "States.JsonToString($.calendarResult)"
+                    },
+                    "completedAt": {
+                        "S.$": "$$.State.EnteredTime"
+                    },
+                    "status": {
+                        "S": "COMPLETE"
+                    }
+                }
+            },
+            "ResultPath": "$.reportResult",
+            "Next": "NotifyUser"
+        },
+        "NotifyUser": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Comment": "Step 6: Send summary notification via SNS",
+            "Parameters": {
+                "TopicArn": "arn:aws:sns:us-east-1:${AWS::AccountId}:subsentinel-notifications",
+                "Subject": "SubSentinel Report Ready",
+                "Message.$": "States.Format('Your SubSentinel analysis is complete. Found {} subscriptions and {} life events.', $.auditResult.totalReceipts, $.calendarResult.eventsFound)"
+            },
+            "Next": "Success"
+        },
+        "Success": {
+            "Type": "Succeed",
+            "Comment": "All agents completed successfully"
+        }
+    }
+}

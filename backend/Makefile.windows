@@ -1,0 +1,180 @@
+# =============================================
+# SubSentinel Backend — Windows Makefile
+# Go 1.21 Lambda Agent Build System (Windows)
+# 100% REAL-TIME DATA — NO MOCK DATA
+# =============================================
+
+# Use PowerShell for all commands
+SHELL := pwsh.exe
+.SHELLFLAGS := -NoProfile -Command
+
+# Agent directories
+AGENTS := auditor calendar negotiator defender learner api
+BIN_DIR := bin
+GOFLAGS := -ldflags="-s -w" -tags lambda.norpc
+
+# ─── Build ────────────────────────────────────
+
+.PHONY: all build clean test lint deploy oauth $(AGENTS)
+
+all: clean build
+
+build: $(AGENTS)
+
+$(AGENTS):
+	@Write-Host "🔨 Building $@ agent..." -ForegroundColor Cyan
+	@$$env:GOOS='linux'; $$env:GOARCH='amd64'; $$env:CGO_ENABLED='0'; go build $(GOFLAGS) -o $(BIN_DIR)/$@/bootstrap ./cmd/$@/main.go
+	@Write-Host "✅ $@ built → $(BIN_DIR)/$@/bootstrap" -ForegroundColor Green
+
+# ─── Build for Local Windows Testing ─────────
+
+build-local:
+	@Write-Host "🔨 Building agents for local Windows testing..." -ForegroundColor Cyan
+	@foreach ($$agent in @('auditor', 'calendar', 'negotiator', 'defender', 'learner')) { \
+		Write-Host "Building $$agent for Windows..." -ForegroundColor Yellow; \
+		go build -o $(BIN_DIR)/$$agent/$$agent.exe ./cmd/$$agent/main.go; \
+		Write-Host "✅ $$agent.exe built" -ForegroundColor Green; \
+	}
+
+# ─── Run Local (Windows) ──────────────────────
+
+run-auditor:
+	@Write-Host "🚀 Running Auditor agent locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/auditor/main.go
+
+run-calendar:
+	@Write-Host "🚀 Running Calendar agent locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/calendar/main.go
+
+run-negotiator:
+	@Write-Host "🚀 Running Negotiator agent locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/negotiator/main.go
+
+run-defender:
+	@Write-Host "🚀 Running Defender agent locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/defender/main.go
+
+run-learner:
+	@Write-Host "🚀 Running Learner agent locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/learner/main.go
+
+run-api:
+	@Write-Host "🚀 Running Subscriptions API locally (Windows)..." -ForegroundColor Cyan
+	@go run ./cmd/api/main.go
+
+# ─── Package (ZIP for Lambda) ─────────────────
+
+package: build
+	@Write-Host "📦 Packaging agents for Lambda..." -ForegroundColor Cyan
+	@foreach ($$agent in @('auditor', 'calendar', 'negotiator', 'defender', 'learner')) { \
+		Write-Host "Packaging $$agent..." -ForegroundColor Yellow; \
+		Compress-Archive -Path $(BIN_DIR)/$$agent/bootstrap -DestinationPath $(BIN_DIR)/$$agent/$$agent.zip -Force; \
+		Write-Host "✅ $$agent.zip created" -ForegroundColor Green; \
+	}
+	@Write-Host "✅ All agents packaged" -ForegroundColor Green
+
+# ─── OAuth Setup (REAL DATA) ──────────────────
+
+oauth:
+	@Write-Host "🔐 Starting Google OAuth setup..." -ForegroundColor Cyan
+	@Write-Host "This will connect YOUR Gmail + Calendar to SubSentinel" -ForegroundColor Yellow
+	@go run cmd/oauth/main.go
+
+# ─── Test ──────────────────────────────────────
+
+test:
+	@Write-Host "🧪 Running all tests..." -ForegroundColor Cyan
+	@go test -v -race -cover ./...
+
+test-coverage:
+	@Write-Host "📊 Generating coverage report..." -ForegroundColor Cyan
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+	@Write-Host "✅ Coverage report → coverage.html" -ForegroundColor Green
+
+test-agent:
+	@Write-Host "🧪 Testing $(AGENT) agent..." -ForegroundColor Cyan
+	@go test -v -race ./internal/agents/$(AGENT)/...
+
+# ─── Lint ──────────────────────────────────────
+
+lint:
+	@Write-Host "🔍 Linting..." -ForegroundColor Cyan
+	@golangci-lint run ./...
+
+# ─── Clean ─────────────────────────────────────
+
+clean:
+	@Write-Host "🧹 Cleaning build artifacts..." -ForegroundColor Cyan
+	@if (Test-Path $(BIN_DIR)) { Remove-Item -Recurse -Force $(BIN_DIR) }
+	@if (Test-Path coverage.out) { Remove-Item -Force coverage.out }
+	@if (Test-Path coverage.html) { Remove-Item -Force coverage.html }
+	@Write-Host "✅ Clean complete" -ForegroundColor Green
+
+# ─── Deploy ───────────────────────────────────
+
+deploy: package
+	@Write-Host "🚀 Deploying via CDK..." -ForegroundColor Cyan
+	@Set-Location ../infrastructure; npx cdk deploy --all --require-approval never; Set-Location ../backend
+
+# ─── Status Check ─────────────────────────────
+
+status:
+	@Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+	@Write-Host "  SubSentinel — Real-Time Data Status" -ForegroundColor Yellow
+	@Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+	@Write-Host ""
+	@Write-Host "Checking .env credentials..." -ForegroundColor White
+	@if ($$env:GOOGLE_CLIENT_ID) { Write-Host "✅ GOOGLE_CLIENT_ID: set" -ForegroundColor Green } else { Write-Host "❌ GOOGLE_CLIENT_ID: missing" -ForegroundColor Red }
+	@if ($$env:GOOGLE_CLIENT_SECRET) { Write-Host "✅ GOOGLE_CLIENT_SECRET: set" -ForegroundColor Green } else { Write-Host "❌ GOOGLE_CLIENT_SECRET: missing" -ForegroundColor Red }
+	@if ($$env:GMAIL_REFRESH_TOKEN) { Write-Host "✅ GMAIL_REFRESH_TOKEN: set" -ForegroundColor Green } else { Write-Host "❌ GMAIL_REFRESH_TOKEN: missing" -ForegroundColor Red }
+	@if ($$env:CALENDAR_REFRESH_TOKEN) { Write-Host "✅ CALENDAR_REFRESH_TOKEN: set" -ForegroundColor Green } else { Write-Host "❌ CALENDAR_REFRESH_TOKEN: missing" -ForegroundColor Red }
+	@if ($$env:AWS_REGION) { Write-Host "✅ AWS_REGION: $$env:AWS_REGION" -ForegroundColor Green } else { Write-Host "❌ AWS_REGION: missing" -ForegroundColor Red }
+	@Write-Host ""
+	@Write-Host "Run 'make oauth' to connect your Google account" -ForegroundColor Yellow
+
+# ─── Install Dependencies ─────────────────────
+
+deps:
+	@Write-Host "📦 Installing Go dependencies..." -ForegroundColor Cyan
+	@go mod download
+	@go mod tidy
+	@Write-Host "✅ Dependencies installed" -ForegroundColor Green
+
+# ─── Help ──────────────────────────────────────
+
+help:
+	@Write-Host ""
+	@Write-Host "SubSentinel Backend — Windows Commands" -ForegroundColor Cyan
+	@Write-Host "======================================" -ForegroundColor Cyan
+	@Write-Host ""
+	@Write-Host "Build Commands:" -ForegroundColor Yellow
+	@Write-Host "  make build          - Build all agents for Lambda (Linux)" -ForegroundColor White
+	@Write-Host "  make build-local    - Build all agents for Windows testing" -ForegroundColor White
+	@Write-Host "  make package        - Package agents as Lambda ZIP files" -ForegroundColor White
+	@Write-Host ""
+	@Write-Host "Run Commands (Local Windows):" -ForegroundColor Yellow
+	@Write-Host "  make run-auditor    - Run Auditor agent locally" -ForegroundColor White
+	@Write-Host "  make run-calendar   - Run Calendar agent locally" -ForegroundColor White
+	@Write-Host "  make run-negotiator - Run Negotiator agent locally" -ForegroundColor White
+	@Write-Host "  make run-defender   - Run Defender agent locally" -ForegroundColor White
+	@Write-Host "  make run-learner    - Run Learner agent locally" -ForegroundColor White
+	@Write-Host "  make run-api        - Run Subscriptions API locally" -ForegroundColor White
+	@Write-Host ""
+	@Write-Host "OAuth & Setup:" -ForegroundColor Yellow
+	@Write-Host "  make oauth          - Setup Google OAuth (Gmail + Calendar)" -ForegroundColor White
+	@Write-Host "  make status         - Check .env configuration" -ForegroundColor White
+	@Write-Host "  make deps           - Install Go dependencies" -ForegroundColor White
+	@Write-Host ""
+	@Write-Host "Testing:" -ForegroundColor Yellow
+	@Write-Host "  make test           - Run all tests" -ForegroundColor White
+	@Write-Host "  make test-coverage  - Generate coverage report" -ForegroundColor White
+	@Write-Host "  make lint           - Run linter" -ForegroundColor White
+	@Write-Host ""
+	@Write-Host "Deployment:" -ForegroundColor Yellow
+	@Write-Host "  make deploy         - Deploy to AWS via CDK" -ForegroundColor White
+	@Write-Host ""
+	@Write-Host "Utilities:" -ForegroundColor Yellow
+	@Write-Host "  make clean          - Remove build artifacts" -ForegroundColor White
+	@Write-Host "  make help           - Show this help message" -ForegroundColor White
+	@Write-Host ""

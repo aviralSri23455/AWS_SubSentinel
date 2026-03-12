@@ -1,0 +1,213 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+}
+
+.headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.headerSub {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.overallBadge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.overallValue {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--color-success);
+    line-height: 1;
+    font-family: var(--font-mono);
+}
+
+.overallLabel {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ─── Comparison ─────────────────────────────── */
+.comparison {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.comparisonItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.compLabel {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.compValue {
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+}
+
+.compTokens {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.arrowIcon {
+    font-size: 1.3rem;
+    color: var(--color-primary-light);
+}
+
+.arrowSave {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--color-success);
+    font-family: var(--font-mono);
+}
+
+/* ─── Bars ───────────────────────────────────── */
+.bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    flex: 1;
+}
+
+.barRow {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.barIcon {
+    font-size: 0.7rem;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.barLabel {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    min-width: 95px;
+    white-space: nowrap;
+}
+
+.barTrack {
+    flex: 1;
+    height: 14px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.barJSON {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-sm);
+    transition: width 1s ease-out;
+}
+
+.barTOON {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.7), rgba(16, 185, 129, 0.4));
+    border-radius: var(--radius-sm);
+    transition: width 1.3s ease-out;
+}
+
+.barSavings {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-success);
+    min-width: 32px;
+    text-align: right;
+    font-family: var(--font-mono);
+}
+
+/* ─── Footer ─────────────────────────────────── */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.annualSave {
+    display: flex;
+    flex-direction: column;
+}
+
+.annualLabel {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.annualValue {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-success);
+    font-family: var(--font-mono);
+}
+
+.footerNote {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.footerNote strong {
+    color: var(--color-primary-light);
+}

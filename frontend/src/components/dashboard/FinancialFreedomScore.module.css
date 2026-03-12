@@ -1,0 +1,145 @@
+/* FinancialFreedomScore — Next-Level */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    padding: 0.5rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1.25rem;
+}
+
+.title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--font-display);
+}
+
+/* ─── Score Ring ────────────────────────────────── */
+.scoreRing {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 1.5rem;
+}
+
+/* Outer glow ring */
+.scoreRing::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%);
+    animation: float 5s ease-in-out infinite;
+}
+
+.progressRing {
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: drop-shadow(0 0 6px currentColor);
+}
+
+.scoreValue {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.scoreNumber {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    font-family: var(--font-display);
+    text-shadow: 0 0 24px currentColor;
+}
+
+.scoreLabel {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+    font-family: var(--font-mono);
+}
+
+.scoreGrade {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ─── Breakdown ──────────────────────────────────── */
+.breakdown {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.01);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.breakdownItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.breakdownDivider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-color);
+}
+
+.breakdownLabel {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+}
+
+.breakdownValue {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+}
+
+.formula {
+    margin-top: 0.875rem;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.formula code {
+    background: rgba(124,58,237,0.06);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.6rem;
+    border: 1px solid rgba(124,58,237,0.12);
+    font-family: var(--font-mono);
+}

@@ -1,0 +1,207 @@
+# Kiro Autopilot Configuration
+
+version: "1.0.0"
+project: "SubSentinel"
+description: "AI-Powered Subscription Guardian - Kiro Autopilot Integration"
+
+## Autopilot Settings
+autopilot:
+  enabled: true
+  mode: "spec-driven"
+  language: "mixed"  # go, typescript, mixed
+  
+  ## Code Generation
+  code_generation:
+    templates_dir: "./templates"
+    output_dirs:
+      go: "../backend"
+      typescript: "../frontend/src"
+      infrastructure: "../infrastructure/lib"
+    
+    ## Language-specific settings
+    go:
+      package_prefix: "github.com/subsentinel/backend"
+      go_version: "1.21"
+      test_coverage: 80
+      
+    typescript:
+      framework: "nextjs"
+      version: "14"
+      strict_mode: true
+      
+    infrastructure:
+      framework: "aws-cdk"
+      language: "typescript"
+      region: "us-east-1"
+
+## Spec Processing
+spec_processing:
+  spec_dir: "./specs"
+  validation:
+    enabled: true
+    schema: "ears"  # EARS-compliant validation
+    
+  parsing:
+    formats: ["yaml", "json"]
+    required_sections: ["title", "description", "triggers", "acceptance_criteria"]
+    
+  generation:
+    parallel: true
+    max_workers: 4
+    cleanup_generated: false
+
+## Testing Configuration
+testing:
+  unit_tests:
+    enabled: true
+    generate: true
+    framework:
+      go: "test"
+      typescript: "jest"
+      
+  integration_tests:
+    enabled: true
+    generate: true
+    aws_mocks: true
+    
+  e2e_tests:
+    enabled: false  # Manual configuration required
+    framework: "playwright"
+
+## Deployment
+deployment:
+  staging:
+    enabled: true
+    environment: "staging"
+    auto_deploy: false  # Manual approval required
+    
+  production:
+    enabled: true
+    environment: "production"
+    auto_deploy: false  # Manual approval required
+    
+  rollback:
+    enabled: true
+    max_versions: 5
+    auto_rollback: true
+
+## Monitoring & Observability
+monitoring:
+  logs:
+    enabled: true
+    level: "info"
+    retention_days: 30
+    
+  metrics:
+    enabled: true
+    cloudwatch: true
+    custom_metrics: true
+    
+  alerts:
+    enabled: true
+    channels: ["slack", "email"]
+    critical_only: false
+
+## Security
+security:
+  scanning:
+    code_scan: true
+    dependency_scan: true
+    secret_detection: true
+    
+  compliance:
+    aws_best_practices: true
+    least_privilege: true
+    encryption_at_rest: true
+    
+  auditing:
+    enabled: true
+    log_all_operations: true
+
+## Workflow Configuration
+workflows:
+  default_workflow: "spec-development"
+  available_workflows:
+    - "spec-development"
+    - "ci-cd-pipeline"
+    - "agent-development"
+    - "infrastructure-update"
+    
+  triggers:
+    spec_change: true
+    code_push: true
+    manual: true
+    schedule: "0 8 * * *"  # Daily at 8 AM
+
+## Template Configuration
+templates:
+  go:
+    agent: "./templates/go-agent.tmpl"
+    service: "./templates/go-service.tmpl"
+    test: "./templates/go-test.tmpl"
+    toon: "./templates/go-toon.tmpl"
+    
+  typescript:
+    component: "./templates/ts-component.tmpl"
+    api: "./templates/ts-api.tmpl"
+    test: "./templates/ts-test.tmpl"
+    cdk: "./templates/ts-cdk.tmpl"
+    
+  infrastructure:
+    lambda_stack: "./templates/lambda-stack.tmpl"
+    api_stack: "./templates/api-stack.tmpl"
+    database_stack: "./templates/database-stack.tmpl"
+
+## Environment Variables
+environment:
+  default:
+    AWS_REGION: "us-east-1"
+    ENVIRONMENT: "development"
+    LOG_LEVEL: "info"
+    
+  staging:
+    ENVIRONMENT: "staging"
+    LOG_LEVEL: "debug"
+    
+  production:
+    ENVIRONMENT: "production"
+    LOG_LEVEL: "warn"
+
+## Notifications
+notifications:
+  spec_processed:
+    enabled: true
+    channels: ["slack"]
+    
+  code_generated:
+    enabled: true
+    channels: ["slack", "email"]
+    
+  tests_passed:
+    enabled: true
+    channels: ["slack"]
+    
+  deployment_complete:
+    enabled: true
+    channels: ["slack", "email"]
+    
+  error_occurred:
+    enabled: true
+    channels: ["slack", "email", "pagerduty"]
+
+## Backup & Recovery
+backup:
+  spec_backup:
+    enabled: true
+    frequency: "daily"
+    retention: "30 days"
+    
+  generated_code_backup:
+    enabled: true
+    frequency: "on_change"
+    retention: "7 days"
+    
+  configuration_backup:
+    enabled: true
+    frequency: "weekly"
+    retention: "90 days"

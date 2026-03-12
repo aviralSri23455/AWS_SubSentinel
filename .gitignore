@@ -1,0 +1,133 @@
+# =============================================
+# SubSentinel .gitignore
+# Go 1.24 + Next.js 14 + AWS CDK
+# =============================================
+
+# ─── Sensitive Credentials (NEVER COMMIT) ───
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+backend/.env
+frontend/.env
+frontend/.env.local
+infrastructure/.env
+*.pem
+*.key
+credentials.json
+token.json
+secrets.json
+oauth-tokens.json
+backend/cmd/oauth/oauth-tokens.json
+
+# ─── Go Build & Cache ───────────────────────
+backend/bin/
+backend/vendor/
+.gocache/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+coverage.out
+coverage.html
+go.work
+go.work.sum
+
+# ─── Node Modules & Dependencies ────────────
+node_modules/
+frontend/node_modules/
+infrastructure/node_modules/
+kiro/node_modules/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ─── Next.js Build & Cache ──────────────────
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo/
+.next/
+out/
+build/
+
+# ─── TypeScript Build ───────────────────────
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+infrastructure/tsconfig.tsbuildinfo
+*.d.ts
+*.js.map
+
+# ─── AWS CDK ────────────────────────────────
+infrastructure/cdk.out/
+cdk.out/
+.cdk.staging/
+cdk.context.json
+
+# ─── AWS SAM ────────────────────────────────
+.aws-sam/
+samconfig.toml
+
+# ─── Build Artifacts & Packages ─────────────
+dist/
+*.zip
+*.tar.gz
+*.tgz
+
+# ─── IDE & Editor ───────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# ─── Logs ───────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ─── Test Coverage ──────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ─── Temporary Files ────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+.cache/
+
+# ─── OS Generated ───────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ─── Keep Example Files ─────────────────────
+!.env.example

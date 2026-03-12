@@ -1,0 +1,47 @@
+# SubSentinel Dark Pattern Taxonomy (TOON Format)
+# 60% fewer tokens than JSON equivalent
+
+dark_patterns[5]{type,name,severity,indicators_count}:
+OBSTRUCTION,Obstruction,1.5,4
+CONFUSION,Confusion,1.2,4
+FORCED_LABOR,Forced Labor,2.0,4
+SHAME_TACTICS,Shame Tactics,1.4,4
+MISDIRECTION,Misdirection,1.3,4
+
+obstruction_indicators[4]{indicator}:
+Cancel button buried multiple levels deep
+Tiny or hard-to-find cancel link
+Requires phone call to cancel
+Cancel option removed from UI
+
+confusion_indicators[4]{indicator}:
+Double-negative phrasing
+Ambiguous button labels
+Don't cancel / Don't not cancel
+Confusing checkbox states
+
+forced_labor_indicators[4]{indicator}:
+Multi-step retention survey
+Required reason for cancellation
+Multiple confirmation dialogs
+Forced hold for retention agent
+
+shame_tactics_indicators[4]{indicator}:
+You'll lose your data forever
+Sad imagery or emotional manipulation
+Highlighting what you'll miss
+Countdown timers creating urgency
+
+misdirection_indicators[4]{indicator}:
+Prominent Keep Membership button
+Discount offers obscuring cancel path
+Visual hierarchy favoring staying
+Auto-selecting retention option
+
+# Provider Hostility Scores
+provider_scores[5]{name,hostility,difficulty}:
+Netflix,3.2,3
+Spotify,4.1,5
+Adobe,8.7,9
+Hulu,3.8,4
+NYTimes,5.5,6

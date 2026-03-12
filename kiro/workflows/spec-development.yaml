@@ -1,0 +1,257 @@
+# Spec-Driven Development Workflow
+
+name: "spec-development"
+version: "1.0.0"
+description: "End-to-end workflow for spec-driven development in SubSentinel"
+
+## Trigger Conditions
+triggers:
+  - type: "file_change"
+    path: "specs/**/*.yaml"
+    action: ["create", "modify"]
+    
+  - type: "file_change"
+    path: "specs/**/*.json"
+    action: ["create", "modify"]
+    
+  - type: "manual"
+    command: "kiro autopilot run spec-development"
+
+## Workflow Steps
+steps:
+  - name: "validate-spec"
+    description: "Validate EARS-compliant specification"
+    action: "validate"
+    inputs:
+      schema: "ears"
+      required_sections: ["title", "description", "triggers", "acceptance_criteria"]
+    outputs:
+      valid: "spec-validated"
+      invalid: "spec-validation-failed"
+    
+  - name: "parse-spec"
+    description: "Parse specification into structured data"
+    action: "parse"
+    inputs:
+      format: "auto"  # yaml or json
+    depends_on: "validate-spec"
+    condition: "spec-validated"
+    
+  - name: "generate-code"
+    description: "Generate code from spec using templates"
+    action: "generate"
+    inputs:
+      language: "auto"  # Detect from spec or config
+      templates: "{{.templates_dir}}"
+    depends_on: "parse-spec"
+    parallel: true
+    branches:
+      - name: "generate-go"
+        condition: "spec.language == 'go' or spec.type == 'agent'"
+        
+      - name: "generate-typescript"
+        condition: "spec.language == 'typescript' or spec.type == 'frontend'"
+        
+      - name: "generate-infrastructure"
+        condition: "spec.type == 'infrastructure'"
+    
+  - name: "run-unit-tests"
+    description: "Run generated unit tests"
+    action: "test"
+    inputs:
+      type: "unit"
+      framework: "auto"
+    depends_on: "generate-code"
+    parallel: true
+    branches:
+      - name: "test-go"
+        condition: "generated.go"
+        
+      - name: "test-typescript"
+        condition: "generated.typescript"
+    
+  - name: "run-integration-tests"
+    description: "Run integration tests with AWS mocks"
+    action: "test"
+    inputs:
+      type: "integration"
+      aws_mocks: true
+    depends_on: "run-unit-tests"
+    condition: "unit-tests-passed"
+    
+  - name: "build-artifacts"
+    description: "Build deployment artifacts"
+    action: "build"
+    inputs:
+      go:
+        binary: true
+        zip: true
+      typescript:
+        bundle: true
+        optimize: true
+    depends_on: "run-integration-tests"
+    condition: "integration-tests-passed"
+    
+  - name: "deploy-staging"
+    description: "Deploy to staging environment"
+    action: "deploy"
+    inputs:
+      environment: "staging"
+      auto_approve: false  # Manual approval required
+    depends_on: "build-artifacts"
+    
+  - name: "run-staging-tests"
+    description: "Run tests in staging environment"
+    action: "test"
+    inputs:
+      type: "staging"
+      environment: "staging"
+    depends_on: "deploy-staging"
+    condition: "deployment-successful"
+    
+  - name: "approve-production"
+    description: "Manual approval for production deployment"
+    action: "approve"
+    inputs:
+      required: true
+      approvers: ["team-lead", "qa-lead"]
+    depends_on: "run-staging-tests"
+    condition: "staging-tests-passed"
+    
+  - name: "deploy-production"
+    description: "Deploy to production environment"
+    action: "deploy"
+    inputs:
+      environment: "production"
+      rollback: true
+    depends_on: "approve-production"
+    condition: "approval-granted"
+    
+  - name: "verify-production"
+    description: "Verify production deployment"
+    action: "verify"
+    inputs:
+      environment: "production"
+      checks: ["health", "performance", "security"]
+    depends_on: "deploy-production"
+    
+  - name: "notify-team"
+    description: "Notify team of workflow completion"
+    action: "notify"
+    inputs:
+      channels: ["slack", "email"]
+      template: "workflow-complete"
+    depends_on: "verify-production"
+    condition: "verification-passed"
+
+## Error Handling
+error_handling:
+  validation_failed:
+    action: "notify"
+    inputs:
+      channels: ["slack"]
+      message: "Spec validation failed"
+    exit: true
+    
+  tests_failed:
+    action: "notify"
+    inputs:
+      channels: ["slack"]
+      message: "Tests failed - check logs"
+    retry: false
+    exit: true
+    
+  deployment_failed:
+    action: "rollback"
+    inputs:
+      environment: "auto"  # Rollback from failed environment
+    notify: true
+    exit: true
+    
+  timeout:
+    action: "notify"
+    inputs:
+      channels: ["slack", "pagerduty"]
+      message: "Workflow timeout"
+    exit: true
+
+## Timeouts
+timeouts:
+  step_timeout: "30m"
+  total_timeout: "2h"
+  deployment_timeout: "15m"
+  test_timeout: "10m"
+
+## Notifications
+notifications:
+  started:
+    enabled: true
+    channels: ["slack"]
+    
+  completed:
+    enabled: true
+    channels: ["slack", "email"]
+    
+  failed:
+    enabled: true
+    channels: ["slack", "email", "pagerduty"]
+    
+  warning:
+    enabled: true
+    channels: ["slack"]
+
+## Monitoring
+monitoring:
+  metrics:
+    - "workflow_duration"
+    - "step_duration"
+    - "success_rate"
+    - "failure_causes"
+    
+  alerts:
+    - metric: "workflow_duration"
+      threshold: "1h"
+      condition: ">"
+      
+    - metric: "failure_rate"
+      threshold: "10%"
+      condition: ">"
+      
+    - metric: "deployment_failure"
+      threshold: "1"
+      condition: ">"
+
+## Rollback Strategy
+rollback:
+  enabled: true
+  automatic: true
+  steps:
+    1. "Stop current deployment"
+    2. "Revert to previous version"
+    3. "Verify rollback success"
+    4. "Notify team"
+    
+  retention:
+    versions: 5
+    days: 7
+
+## Environment Variables
+env:
+  AWS_REGION: "us-east-1"
+  ENVIRONMENT: "{{.environment}}"
+  LOG_LEVEL: "info"
+  KIRO_AUTOPILOT: "true"
+
+## Dependencies
+dependencies:
+  tools:
+    - "go:1.21"
+    - "node:18"
+    - "aws-cli:2"
+    - "cdk:2"
+    
+  services:
+    - "aws-bedrock"
+    - "aws-dynamodb"
+    - "aws-lambda"
+    - "aws-apigateway"
